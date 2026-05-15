@@ -85,3 +85,46 @@ El proyecto está preparado para ser desplegado fácilmente en un VPS con **Dock
 ## 🧑‍💻 Usuarios de Prueba Iniciales
 
 El archivo `init.sql` creará la base de datos y unas tablas iniciales si la base de datos está vacía. *(Nota: Asegúrate de agregar usuarios de prueba directamente en la base de datos o implementar un endpoint de registro si es necesario para el flujo completo).*
+
+## 🔔 Actualizaciones recientes (2026-05-15)
+
+- Se agregó un **Dashboard** para ver fichajes pendientes y sincronizarlos manualmente desde el frontend.
+    - Componente: [frontend/src/components/Dashboard.jsx](frontend/src/components/Dashboard.jsx)
+- Se agregó un **modal generador de QR** para mostrar un QR con el `employee_id`.
+    - Componente: [frontend/src/components/QrModal.jsx](frontend/src/components/QrModal.jsx)
+- Se añadió la dependencia `qrcode` al `package.json` para renderizar QR en el cliente.
+    - Archivo: [frontend/package.json](frontend/package.json)
+- Se añadió un Service Worker estático para servir correctamente `/serviceWorker.js` y evitar errores MIME/registro en consola.
+    - Archivo servido: [frontend/public/serviceWorker.js](frontend/public/serviceWorker.js)
+    - Nota: el código fuente de Workbox permanece en [frontend/src/serviceWorker.js](frontend/src/serviceWorker.js) (utilizado en builds con Workbox), pero el Service Worker público evita que el navegador reciba HTML en la ruta `/serviceWorker.js`.
+- Se añadió un helper en IndexedDB para listar fichajes locales desde el Dashboard.
+    - Archivo: [frontend/src/db/index.js](frontend/src/db/index.js)
+
+Todos estos cambios fueron commiteados y subidos a `origin/main`.
+
+## ⚙️ Comandos rápidos (Frontend)
+
+Si trabajas localmente en el frontend, ejecuta:
+
+```bash
+cd frontend
+npm install
+npm run build
+```
+
+Si usas Docker Compose y quieres reconstruir la imagen del frontend:
+
+```bash
+docker compose build frontend
+docker compose up -d --no-deps frontend
+```
+
+Después de actualizar, abre la app en `http://localhost:8090` y en DevTools > Application > Service Workers verifica que `/serviceWorker.js` esté registrado.
+
+## 🧭 Notas y recomendaciones
+
+- Si quieres un precache automático y gestión avanzada del Service Worker, considera integrar `vite-plugin-pwa` o configurar Workbox en el pipeline de build (actualmente hay un `src/serviceWorker.js` con lógica Workbox que puede aprovecharse en build time).
+- Si deseas que el Dashboard muestre el historial persistente del servidor (no solo lo local), puedo añadir un endpoint `GET /api/attendances` y el cliente lo consumirá.
+
+¿Quieres que continúe y automatice la integración de Workbox en el pipeline de `vite` o que añada el endpoint `/api/attendances` en el backend?\
+
