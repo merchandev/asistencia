@@ -17,6 +17,10 @@ export async function getPendingPunches() {
   return await db.pendingPunches.where('synced').equals(0).toArray();
 }
 
+export async function getAllPunches() {
+  return await db.pendingPunches.toArray();
+}
+
 export async function markAsSynced(id) {
   await db.pendingPunches.update(id, { synced: 1 });
 }

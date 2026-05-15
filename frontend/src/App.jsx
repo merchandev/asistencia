@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { PunchButton } from './components/PunchButton';
+import Dashboard from './components/Dashboard';
+import QrModal from './components/QrModal';
 import './index.css';
 
 function App() {
@@ -96,9 +98,17 @@ function App() {
           <h1 className="text-xl font-bold">Asistencia PWA</h1>
           <p className="text-sm text-blue-200">Empleado: {employeeId}</p>
         </div>
-        <button onClick={handleLogout} className="text-sm bg-blue-700 hover:bg-blue-600 px-3 py-1 rounded">
-          Salir
-        </button>
+        <div className="flex items-center gap-3">
+          <button onClick={() => setShowDashboard(true)} className="text-sm bg-blue-700 hover:bg-blue-600 px-3 py-1 rounded">
+            Dashboard
+          </button>
+          <button onClick={() => setShowQr(true)} className="text-sm bg-green-600 hover:bg-green-500 px-3 py-1 rounded">
+            QR
+          </button>
+          <button onClick={handleLogout} className="text-sm bg-blue-700 hover:bg-blue-600 px-3 py-1 rounded">
+            Salir
+          </button>
+        </div>
       </header>
 
       <main className="container mx-auto px-4 space-y-6 flex flex-col items-center">
@@ -106,6 +116,17 @@ function App() {
         <PunchButton branchCode="SUC-01" employeeId={employeeId} punchType="in" />
         <PunchButton branchCode="SUC-01" employeeId={employeeId} punchType="out" />
       </main>
+      <div className="fixed bottom-6 right-6">
+        {showDashboard && (
+          <div className="w-96">
+            <Dashboard />
+            <div className="text-right mt-2">
+              <button onClick={() => setShowDashboard(false)} className="text-sm text-gray-600">Cerrar</button>
+            </div>
+          </div>
+        )}
+        {showQr && <QrModal employeeId={employeeId} onClose={() => setShowQr(false)} />}
+      </div>
     </div>
   );
 }
