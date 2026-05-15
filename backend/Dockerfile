@@ -14,6 +14,9 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 WORKDIR /var/www/html
 COPY . /var/www/html
 
+# Instalar dependencias de PHP usando Composer
+RUN composer install --no-dev --optimize-autoloader
+
 # Establecer el usuario y permisos
 RUN chown -R www-data:www-data /var/www/html
 
