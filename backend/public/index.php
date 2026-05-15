@@ -1,5 +1,11 @@
 <?php
-require __DIR__ . '/../vendor/autoload.php';
+// Autoloader simple PSR-4 para el namespace App\ → src/
+spl_autoload_register(function (string $class) {
+    if (str_starts_with($class, 'App\\')) {
+        $path = __DIR__ . '/../src/' . str_replace(['App\\', '\\'], ['', '/'], $class) . '.php';
+        if (file_exists($path)) require_once $path;
+    }
+});
 
 use App\JwtUtils;
 use App\Controllers\AuthController;

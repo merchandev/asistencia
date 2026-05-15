@@ -1,59 +1,80 @@
 <?php
 namespace App;
 
-use Firebase\JWT\JWT;
-use Firebase\JWT\Key;
-use Exception;
-
+/**
+ * Implementación nativa de JWT usando HMAC-SHA256.
+ * Sin dependencias externas — usa funciones nativas de PHP.
+ */
 class JwtUtils {
-    public static function generateToken($employeeId) {
+
+    private static function base64UrlEncode(string $data): string {
+        return rtrim(strtr(base64_encode($data), '+/', '-_'), '=');
+    }
+
+    private static function base64UrlDecode(string $data): string {
+        return base64_decode(strtr($data, '-_', '+/'));
+    }
+
+    public static function generateToken($employeeId): string {
         $secretKey = getenv('JWT_SECRET') ?: 'default_secret';
-        $issuedAt   = new \DateTimeImmutable();
-        $expire     = $issuedAt->modify('+30 days')->getTimestamp();      
-        $serverName = "asistencia_pwa";
+        $issuedAt  = time();
+        $expire    = $issuedAt + (30 * 24 * 60 * 60); // 30 días
 
-        $data = [
-            'iat'  => $issuedAt->getTimestamp(),
-            'iss'  => $serverName,
-            'nbf'  => $issuedAt->getTimestamp(),
+        $header  = self::base64UrlEncode(json_encode(['typ' => 'JWT', 'alg' => 'HS256']));
+        $payload = self::base64UrlEncode(json_encode([
+            'iat'  => $issuedAt,
+            'iss'  => 'asistencia_pwa',
+            'nbf'  => $issuedAt,
             'exp'  => $expire,
-            'data' => [
-                'employee_id' => $employeeId,
-            ]
-        ];
+            'data' => ['employee_id' => $employeeId],
+        ]));
 
-        return JWT::encode($data, $secretKey, 'HS256');
+        $signature = self::base64UrlEncode(
+            hash_hmac('sha256', "$header.$payload", $secretKey, true)
+        );
+
+        return "$header.$payload.$signature";
     }
 
-    public static function validateToken($token) {
-        try {
-            $secretKey = getenv('JWT_SECRET') ?: 'default_secret';
-            $decoded = JWT::decode($token, new Key($secretKey, 'HS256'));
-            return $decoded->data;
-        } catch (Exception $e) {
-            return null;
-        }
+    public static function validateToken(?string $token): ?\stdClass {
+        if (!$token) return null;
+        $parts = explode('.', $token);
+        if (count($parts) !== 3) return null;
+
+        [$header, $payload, $signature] = $parts;
+
+        $secretKey       = getenv('JWT_SECRET') ?: 'default_secret';
+        $expectedSig     = self::base64UrlEncode(
+            hash_hmac('sha256', "$header.$payload", $secretKey, true)
+        );
+
+        // Comparación segura contra timing attacks
+        if (!hash_equals($expectedSig, $signature)) return null;
+
+        $data = json_decode(self::base64UrlDecode($payload));
+        if (!$data || !isset($data->exp) || $data->exp < time()) return null;
+
+        return $data->data ?? null;
     }
 
-    public static function getBearerToken() {
+    public static function getBearerToken(): ?string {
         $headers = null;
         if (isset($_SERVER['Authorization'])) {
-            $headers = trim($_SERVER["Authorization"]);
-        } else if (isset($_SERVER['HTTP_AUTHORIZATION'])) { // Nginx or fast CGI
-            $headers = trim($_SERVER["HTTP_AUTHORIZATION"]);
+            $headers = trim($_SERVER['Authorization']);
+        } elseif (isset($_SERVER['HTTP_AUTHORIZATION'])) {
+            $headers = trim($_SERVER['HTTP_AUTHORIZATION']);
         } elseif (function_exists('apache_request_headers')) {
-            $requestHeaders = apache_request_headers();
-            $requestHeaders = array_combine(array_map('ucwords', array_keys($requestHeaders)), array_values($requestHeaders));
-            if (isset($requestHeaders['Authorization'])) {
-                $headers = trim($requestHeaders['Authorization']);
+            $reqHeaders = apache_request_headers();
+            $reqHeaders = array_combine(array_map('ucwords', array_keys($reqHeaders)), array_values($reqHeaders));
+            if (isset($reqHeaders['Authorization'])) {
+                $headers = trim($reqHeaders['Authorization']);
             }
         }
-        
-        if (!empty($headers)) {
-            if (preg_match('/Bearer\s(\S+)/', $headers, $matches)) {
-                return $matches[1];
-            }
+
+        if (!empty($headers) && preg_match('/Bearer\s(\S+)/', $headers, $matches)) {
+            return $matches[1];
         }
         return null;
     }
 }
+

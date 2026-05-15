@@ -2,7 +2,7 @@
 namespace App\Controllers;
 
 use App\Database;
-use Predis\Client;
+// Usa la extensión nativa Redis (instalada vía PECL), sin Predis
 
 class AttendanceController {
     public function registerPunch($data, $employeeId) {
@@ -78,19 +78,16 @@ class AttendanceController {
 
         // 5. Enviar a Cola Redis para notificaciones (Asíncrono)
         try {
-            $redis = new Client([
-                'scheme' => 'tcp',
-                'host'   => getenv('REDIS_HOST') ?: 'redis',
-                'port'   => 6379,
-            ]);
-            
+            $redis = new \Redis();
+            $redis->connect(getenv('REDIS_HOST') ?: 'redis', 6379);
+
             $taskData = [
-                'type' => 'email_notification',
+                'type'        => 'email_notification',
                 'employee_id' => $employeeId,
-                'punch_type' => $data['punch_type'],
-                'time' => $serverTimeStr
+                'punch_type'  => $data['punch_type'],
+                'time'        => $serverTimeStr
             ];
-            $redis->lpush('asistencia_tasks', json_encode($taskData));
+            $redis->lPush('asistencia_tasks', json_encode($taskData));
         } catch (\Exception $e) {
             // Ignorar errores de Redis para no fallar el request principal
         }
