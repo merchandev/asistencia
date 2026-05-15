@@ -38,6 +38,7 @@ services:
       DB_PASS: ${DB_PASS}
       JWT_SECRET: ${JWT_SECRET}
       REDIS_HOST: redis
+
     networks:
       - asistencia_net
     depends_on:
@@ -59,6 +60,7 @@ services:
       DB_USER: ${DB_USER}
       DB_PASS: ${DB_PASS}
       REDIS_HOST: redis
+
     networks:
       - asistencia_net
     depends_on:
