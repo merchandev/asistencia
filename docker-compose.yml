@@ -4,10 +4,10 @@ services:
     container_name: asistencia_db
     restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASS}
-      MYSQL_DATABASE: ${DB_NAME}
-      MYSQL_USER: ${DB_USER}
-      MYSQL_PASSWORD: ${DB_PASS}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASS:-RootPass2026!}
+      MYSQL_DATABASE: ${DB_NAME:-asistencia_db}
+      MYSQL_USER: ${DB_USER:-asistencia_user}
+      MYSQL_PASSWORD: ${DB_PASS:-UserPass2026!}
     volumes:
       - db_data:/var/lib/mysql
       - ./backend/init.sql:/docker-entrypoint-initdb.d/init.sql
@@ -15,8 +15,10 @@ services:
       - asistencia_net
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
       timeout: 20s
-      retries: 10
+      retries: 15
+      start_period: 60s
 
   redis:
     image: redis:alpine
@@ -33,10 +35,10 @@ services:
     restart: always
     environment:
       DB_HOST: db
-      DB_NAME: ${DB_NAME}
-      DB_USER: ${DB_USER}
-      DB_PASS: ${DB_PASS}
-      JWT_SECRET: ${JWT_SECRET}
+      DB_NAME: ${DB_NAME:-asistencia_db}
+      DB_USER: ${DB_USER:-asistencia_user}
+      DB_PASS: ${DB_PASS:-UserPass2026!}
+      JWT_SECRET: ${JWT_SECRET:-CambiaEsteSecretoEnProduccion2026!}
       REDIS_HOST: redis
 
     networks:
@@ -56,9 +58,9 @@ services:
     command: ["php", "/var/www/html/worker.php"]
     environment:
       DB_HOST: db
-      DB_NAME: ${DB_NAME}
-      DB_USER: ${DB_USER}
-      DB_PASS: ${DB_PASS}
+      DB_NAME: ${DB_NAME:-asistencia_db}
+      DB_USER: ${DB_USER:-asistencia_user}
+      DB_PASS: ${DB_PASS:-UserPass2026!}
       REDIS_HOST: redis
 
     networks:
