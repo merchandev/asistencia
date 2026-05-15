@@ -43,10 +43,10 @@ CREATE TABLE IF NOT EXISTS attendances (
 
 -- Insertar datos semilla para pruebas
 INSERT IGNORE INTO branches (branch_code, name, latitude, longitude, radius_meters) VALUES 
-('SUC-01', 'Sucursal Central', 10.123456, -67.123456, 50),
-('SUC-02', 'Sucursal Norte', 10.223456, -67.223456, 100);
+('SUC-01', 'Sucursal Central', 10.123456, -67.123456, 500000),
+('SUC-02', 'Sucursal Norte', 10.223456, -67.223456, 500000);
 
--- Insertar empleado de prueba (PIN: 1234)
--- pin_hash es un hash de BCRYPT para "1234"
+-- PIN de ambos empleados: 1234
 INSERT IGNORE INTO employees (employee_id, full_name, pin_hash) VALUES 
-('EMP-001', 'Juan Perez', '$2y$10$wE.S2/0kCj8d/lE5y0tqI.d5vEItzC0KQKxM5X6Wz/TzQzQzQzQzQ');
+('EMP-001', 'Juan Perez',  '$2y$10$QeLpZQnnS7wNasVW/HOWtOgStP6oa6jKYhPQgVZu8j4nVrcqqb4Zm'),
+('EMP-002', 'Maria Lopez', '$2y$10$QeLpZQnnS7wNasVW/HOWtOgStP6oa6jKYhPQgVZu8j4nVrcqqb4Zm');
