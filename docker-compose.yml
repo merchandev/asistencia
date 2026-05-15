@@ -75,13 +75,13 @@ services:
       - backend
 
   webserver:
-    image: nginx:alpine
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
     container_name: asistencia_webserver
     restart: always
     ports:
       - "8090:80"
-    volumes:
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
     networks:
       - asistencia_net
     depends_on:
