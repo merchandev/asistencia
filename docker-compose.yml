@@ -13,6 +13,8 @@ services:
       - ./backend/init.sql:/docker-entrypoint-initdb.d/init.sql
     networks:
       - asistencia_net
+    healthcheck:
+      disable: true
 
   redis:
     image: redis:alpine
